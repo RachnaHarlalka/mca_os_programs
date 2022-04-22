@@ -7,7 +7,7 @@ typedef struct {
 }process;
 
 int sortByAT(process *,int);
-int RR(process*,int);
+int RR(process*,int,q);
 
 int main(){
     int no_of_process,status,q;
