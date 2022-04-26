@@ -1,13 +1,11 @@
-
 #include<stdio.h>
 #include<stdlib.h>
 
 typedef struct {
-    int process_id,arrival_time,burst_time,completion_time,turn_around_time,waiting_time,isDone;
+    int process_id,arrival_time,burst_time,completion_time,turn_around_time,waiting_time,isDone,response_time;
 }process;
-
 int sortByAT(process *,int);
-int RR(process*,int,q);
+int RR(process*,int,int);
 
 int main(){
     int no_of_process,status,q;
@@ -31,12 +29,15 @@ int main(){
         processArray[i].completion_time=0;
         processArray[i].turn_around_time=0;
         processArray[i].waiting_time=0;
+        processArray[i].response_time=processArray[i].burst_time;
         printf("\n");
     }
     sortByAT(processArray,no_of_process);
+
     printf("Enter the time quantum");
     scanf("%d",&q);
     printf("/n");
+    
     printf("Round Robin\n");
 
     status=RR(processArray,no_of_process,q);
@@ -73,81 +74,71 @@ sortByAT(process *p,int n){
 return 0;
 }
 
-int RR(process *p,int n,int q)
+int RR(process *p,int n, int TQ)
 {
-    int *BTArray;
-    int i,total=0,index,currentSmallestBT,currentTime=0,prev;
-    float avgTAT=0.0,avgWT=0.0;
+    int i, j, time, remain, flag = 0;
+    float avgWT = 0.0, avgTAT = 0.0;
 
-    BTArray = (int *)malloc(sizeof(int) * n);
-    if(BTArray == NULL)
+    time = 0;
+    i = 0;
+    remain = n;
+
+    printf("Gantt Chart\n");
+
+    while (remain)
     {
-        return -1;
-    }
-
-    for (i = 0; i < n; i++)
-    {
-        BTArray[i] = p[i].burst_time;
-    }
-
-    printf("Gantt Chart : ");
-printf("\n --------------------------------\n");
-
-    while (total < n)
-    {
-        index = -1;
-        currentSmallestBT = __INT_MAX__;
-        for (i = 0; i < n; i++)
+        //situation when remaining burst time is less than time quantum and greater than 0
+        if (p[i].response_time <= TQ && p[i].response_time > 0)
         {
-            if (p[i].arrival_time <= currentTime && p[i].isDone == 0)
-            {
-                if (BTArray[i] < currentSmallestBT)
-                {
-                    currentSmallestBT = BTArray[i];
-                    index = i;
-                }
-            }
+            time = time + p[i].response_time;
+            printf(" P%d ", p[i].process_id);
+            p[i].response_time = 0;
+            flag = 1;
+        }
+        //situation when remaining burst time is greater then time quantum
+        else if (p[i].response_time > 0)
+        {
+            p[i].response_time = p[i].response_time - TQ;
+            time = time + TQ;
+            printf(" P%d ", p[i].process_id);
+        }
+        //when remaining burst time is equal to 0 i.e process is processed
+        if (p[i].response_time == 0 && flag == 1)
+        {
+            remain--;
+            p[i].turn_around_time = time - p[i].arrival_time;
+            p[i].waiting_time = time - p[i].arrival_time - p[i].burst_time;
+            avgWT = avgWT + time - p[i].arrival_time - p[i].burst_time;
+            avgTAT = avgTAT + time - p[i].arrival_time;
+            flag = 0;
         }
 
-       if (index != -1)
+        //when only one process is left by going sequentially
+        if (i == n - 1)
         {
-            if (prev != index)
-            {
-                printf("P%d ", p[index].process_id);
-            }
-            BTArray[index]--;
-            currentTime++;
-            prev = index;
-            if (BTArray[index] == 0)
-            {
-                p[index].completion_time = currentTime;
-                p[index].turn_around_time = p[index].completion_time - p[index].arrival_time;
-                p[index].waiting_time = p[index].turn_around_time - p[index].burst_time;
-                p[index].isDone = 1;
-                total++;
-            }
+            i = 0;
+        }
+        else if (p[i + 1].arrival_time <= time)
+        {
+            i++;
         }
         else
         {
-            currentTime++;
+            i = 0;
         }
     }
-printf("\n --------------------------------\n");
+
     printf("\n\n");
-    printf("Process\t  Arrival Time\tBurst Time\tTurn Around Time\tWaiting Time\n");
+    printf("Process\tAT\tBT\tTAT\tWT\n");
 
     for (i = 0; i < n; i++)
     {
-        avgWT += p[i].waiting_time;
-        avgTAT += p[i].turn_around_time;
-        printf("P%d\t\t%d\t\t%d\t\t%d\t\t%d\n", p[i].process_id, p[i].arrival_time, p[i].burst_time, p[i].turn_around_time, p[i].waiting_time);
+        printf("P%d\t%d\t%d\t%d\t%d\n", p[i].process_id, p[i].arrival_time, p[i].burst_time, p[i].turn_around_time, p[i].waiting_time);
     }
 
     printf("\n");
-    printf("Average Waiting time : %.2f\n", avgWT / n);
-    printf("Average Turn around time : %.2f\n", avgTAT / n);
-
-    free(BTArray);
+    printf("Average Waiting Time : %.2f\n", avgWT / n);
+    printf("Average Turn Around Time : %.2f\n", avgTAT / n);
 
     return 0;
 }

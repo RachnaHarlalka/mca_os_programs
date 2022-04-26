@@ -5,8 +5,6 @@ typedef struct {
     int process_id,arrival_time,burst_time,completion_time,turn_around_time,waiting_time,isDone;
 }process;
 
-int sortByAT(process *,int);
-
 int main(){
     int no_of_process,status;
     process *processArray;
@@ -31,7 +29,7 @@ int main(){
         processArray[i].waiting_time=0;
         printf("\n");
     }
-    sortByAT(processArray,no_of_process);
+    int sortByAT(processArray,no_of_process);
     printf("Longest Job first\n");
 
     status=LJF(processArray,no_of_process);
@@ -44,7 +42,7 @@ int main(){
 
 }
 
-//applyiing insertion sort to sort ptocess by arrival time
+//applyiing insertion sort to sort process by arrival time
 sortByAT(process *p,int n){
     int i,j;
     for( i=1;i<n;i++)
@@ -74,19 +72,8 @@ int LJF(process *p,int n)
     int i,totalProcess=0,index,currentLargestBT,currentTime=0;
     float avgTAT=0.0,avgWT=0.0;
 
-    // BTArray = (int *)malloc(sizeof(int) * n);
-    // if(BTArray == NULL)
-    // {
-    //     return -1;
-    // }
-
-    // for (i = 0; i < n; i++)
-    // {
-    //     BTArray[i] = p[i].burst_time;
-    // }
-
     printf("Gantt Chart : ");
-printf("\n --------------------------------\n");
+    printf("\n --------------------------------\n");
 
     while (totalProcess < n)
     {
@@ -96,7 +83,7 @@ printf("\n --------------------------------\n");
         //finding the largest burst time among the process that are yet to be precessed
         for (i = 0; i < n; i++)
         {
-            if (p[i].arrival_time <= currentTime && p[i].isDone == 0)
+            if (p[i].arrival_time <= currentTime && p[i].isDone == 0) //suppose arrival time of any process is not 0, it is greater than 0 only
             {
                 if (p[i].burst_time > currentLargestBT)
                 {
@@ -109,27 +96,19 @@ printf("\n --------------------------------\n");
         if (index != -1)
         {
             printf(" | P%d | ", p[index].process_id);
-            while (p[index].burst_time != 0)
-            {
-                p[index].burst_time--;
-                currentTime++;
-            }
-
-            if (p[index].burst_time == 0)
-            {
-                p[index].completion_time = currentTime;
-                p[index].turn_around_time = p[index].completion_time - p[index].arrival_time;
-                p[index].waiting_time = p[index].turn_around_time - p[index].burst_time;
-                p[index].isDone = 1;
-                totalProcess++;
-            }
+            currentTime+=currentLargestBT;
+            p[index].completion_time = currentTime;
+            p[index].turn_around_time = p[index].completion_time - p[index].arrival_time;
+            p[index].waiting_time = p[index].turn_around_time - p[index].burst_time;
+            p[index].isDone = 1;
+            totalProcess++;
         }
         else
         {
             currentTime++;
         }
     }
-printf("\n --------------------------------\n");
+    printf("\n --------------------------------\n");
     printf("\n\n");
     printf("Process\t  Arrival Time\tBurst Time\tTurn Around Time\tWaiting Time\n");
 

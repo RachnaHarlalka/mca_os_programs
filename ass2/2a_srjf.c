@@ -1,3 +1,5 @@
+//preemtive version of shortest job first
+
 #include<stdio.h>
 #include<stdlib.h>
 
@@ -5,11 +7,12 @@ typedef struct {
     int process_id,arrival_time,burst_time,completion_time,turn_around_time,waiting_time,isDone;
 }process;
 
-int sortByAT(process *,int);
-int SRJF(process*,int);
+int sortByAT(process*,int);
+int SRJF(process*,int); 
 
 int main(){
     int no_of_process,status;
+    float avgTAT=0.0,avgWT=0.0;
     process *processArray;
     printf("Enter the number of process : ");
     scanf("%d",&no_of_process);
@@ -33,6 +36,7 @@ int main(){
         printf("\n");
     }
     sortByAT(processArray,no_of_process);
+
     printf("Shortest remaining Job first\n");
 
     status=SRJF(processArray,no_of_process);
@@ -40,6 +44,20 @@ int main(){
     {
         printf("Unsuccessfull !!");
     }
+    printf("\n --------------------------------\n");
+    printf("\n\n");
+    printf("Process\t  Arrival Time\tBurst Time\tTurn Around Time\tWaiting Time\n");
+
+    for (int i = 0; i < no_of_process; i++)
+    {
+        avgWT += processArray[i].waiting_time;
+        avgTAT += processArray[i].turn_around_time;
+        printf("P%d\t\t%d\t\t%d\t\t%d\t\t%d\n", processArray[i].process_id, processArray[i].arrival_time, processArray[i].burst_time, processArray[i].turn_around_time, processArray[i].waiting_time);
+    }
+
+    printf("\n");
+    printf("Average Waiting time : %.2f\n", avgWT / no_of_process);
+    printf("Average Turn around time : %.2f\n", avgTAT / no_of_process);
 
     return 0;
 
@@ -62,18 +80,14 @@ sortByAT(process *p,int n){
         }
         p[j+1]=temp;
     }
-//  for(i=0;i<n;i++)
-//  {
-//      printf("%d",p[i].process_id);
-//  }
 return 0;
 }
 
 int SRJF(process *p,int n)
 {
     int *remaining_BT;
-    int i,total=0,index,currentSmallestBT,currentTime=0,prev;
-    float avgTAT=0.0,avgWT=0.0;
+    int i,total=0,index,currentSmallestBT,currentTime=0,prev=-1;
+    // float avgTAT=0.0,avgWT=0.0;
 
     remaining_BT = (int *)malloc(sizeof(int) * n);
     if(remaining_BT == NULL)
@@ -128,21 +142,6 @@ int SRJF(process *p,int n)
             currentTime++;
         }
     }
-printf("\n --------------------------------\n");
-    printf("\n\n");
-    printf("Process\t  Arrival Time\tBurst Time\tTurn Around Time\tWaiting Time\n");
-
-    for (i = 0; i < n; i++)
-    {
-        avgWT += p[i].waiting_time;
-        avgTAT += p[i].turn_around_time;
-        printf("P%d\t\t%d\t\t%d\t\t%d\t\t%d\n", p[i].process_id, p[i].arrival_time, p[i].burst_time, p[i].turn_around_time, p[i].waiting_time);
-    }
-
-    printf("\n");
-    printf("Average Waiting time : %.2f\n", avgWT / n);
-    printf("Average Turn around time : %.2f\n", avgTAT / n);
-
     free(remaining_BT);
 
     return 0;
